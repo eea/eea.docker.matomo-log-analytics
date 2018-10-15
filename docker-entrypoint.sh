@@ -16,7 +16,7 @@ if [ "$@" == "run" ]; then
         mkdir -p /analytics/processed/$site_id/	
 	touch /analytics/processed/$site_id/log.$(date -u  '+%Y-%m')
         
-	for file in $(grep -Fx -f /analytics/processed/$site_id/log.$(date -u  '+%Y-%m') /tmp/list_files.txt); do
+	for file in $(grep -Fv -f /analytics/processed/$site_id/log.$(date -u '+%Y-%m') /tmp/list_files.txt); do
 		result=$(python /import_logs.py   --login=${MATOMO_USERNAME} --password=${MATOMO_PASSWORD} --idsite=$site_id  --url=$MATOMO_URL --recorders=1 --enable-http-errors --enable-http-redirects --enable-static $file 2>&1 )
 	        if [ $? -eq 0 ]; then
 			number_processed=$(echo "$result"  | grep successfully | awk '{print $1}' )
