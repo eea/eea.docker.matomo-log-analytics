@@ -16,12 +16,13 @@ if [ "$@" == "run" ]; then
         mkdir -p /analytics/processed/$site_id/	
 	touch /analytics/processed/$site_id/log.$(date -u  '+%Y-%m')
         
-	for file in $(grep -Fv -f /analytics/processed/$site_id/log.$(date -u '+%Y-%m') /tmp/list_files.txt); do
+	for file in $(grep -Fvx -f /analytics/processed/$site_id/log.* /tmp/list_files.txt); do
 		result=$(python /import_logs.py   --login=${MATOMO_USERNAME} --password=${MATOMO_PASSWORD} --idsite=$site_id  --url=$MATOMO_URL --recorders=1 --enable-http-errors --enable-http-redirects --enable-static $file 2>&1 )
 	        if [ $? -eq 0 ]; then
 			number_processed=$(echo "$result"  | grep successfully | awk '{print $1}' )
-                	echo "$(date -u  '+%Y-%m-%d-%H-%M-%S') $file OK $number_processed" >> /analytics/processed/$site_id/log.$(date -u  '+%Y-%m')
-                        echo "$file processed succesfully"
+                	echo "[Date]:$(date -u  '+%Y-%m-%d-%H-%M-%S') [Status]:OK [Records Imported]:$number_processed [File name]:" >> /analytics/processed/$site_id/log.$(date -u  '+%Y-%m')
+                        echo "$file" >> /analytics/processed/$site_id/log.$(date -u  '+%Y-%m')
+			echo "$file processed succesfully, with the following result:"
 			echo "$result"
 		else
 			echo "IMPORT_LOG_ERROR - $file"
