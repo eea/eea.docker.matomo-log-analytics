@@ -6,7 +6,7 @@ if [ -z "${MATOMO_URL}" ] || [ -z "${MATOMO_USERNAME}" ] || [ -z "${MATOMO_PASSW
 fi
 
 MATOMO_RECORDERS=${MATOMO_RECORDERS:-4}
-MATOMO_IMPORT_OPTIONS=${MATOMO_IMPORT_OPTIONS:-"--enable-http-errors --enable-http-redirects --enable-static"}
+MATOMO_IMPORT_OPTIONS=${MATOMO_IMPORT_OPTIONS:-"--enable-http-errors --enable-http-redirects --enable-static --enable-bots"}
 
 mkdir -p /analytics/logs/
 
