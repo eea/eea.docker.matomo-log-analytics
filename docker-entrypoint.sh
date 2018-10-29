@@ -5,6 +5,9 @@ if [ -z "${MATOMO_URL}" ] || [ -z "${MATOMO_USERNAME}" ] || [ -z "${MATOMO_PASSW
   exit 1
 fi
 
+MATOMO_RECORDERS=${MATOMO_RECORDERS:-4}
+MATOMO_IMPORT_OPTIONS=${MATOMO_IMPORT_OPTIONS:-"--enable-http-errors --enable-http-redirects --enable-static"}
+
 mkdir -p /analytics/logs/
 
 if [ "$@" == "run" ]; then
@@ -17,7 +20,7 @@ if [ "$@" == "run" ]; then
 	touch /analytics/processed/$site_id/log.$(date -u  '+%Y-%m')
         
 	for file in $(grep -Fvx -f /analytics/processed/$site_id/log.* /tmp/list_files.txt); do
-		result=$(python /import_logs.py   --login=${MATOMO_USERNAME} --password=${MATOMO_PASSWORD} --idsite=$site_id  --url=$MATOMO_URL --recorders=1 --enable-http-errors --enable-http-redirects --enable-static $file 2>&1 )
+		result=$(python /import_logs.py   --login=${MATOMO_USERNAME} --password=${MATOMO_PASSWORD} --idsite=$site_id  --url=$MATOMO_URL --recorders=$MATOMO_RECORDERS $MATOMO_IMPORT_OPTIONS $file 2>&1 )
 	        if [ $? -eq 0 ]; then
 			number_processed=$(echo "$result"  | grep successfully | awk '{print $1}' )
                 	echo "[Date]:$(date -u  '+%Y-%m-%d-%H-%M-%S') [Status]:OK [Records Imported]:$number_processed [File name]:" >> /analytics/processed/$site_id/log.$(date -u  '+%Y-%m')
