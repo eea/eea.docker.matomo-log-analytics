@@ -40,7 +40,8 @@ from datetime import datetime
 print datetime.strptime('${LOG_DATE}', '%d/%b/%Y:%H:%M:%S').strftime('%Y-%m-%d')")  
 		 
 		#invalidate reports
-                 curl "${MATOMO_URL}?module=API&method=CoreAdminHome.invalidateArchivedReports&idSites=${site_id}&dates=${LOG_DATE_MATOMO}&token_auth=${MATOMO_TOKEN}"
+		 echo "Invalidating date ${LOG_DATE_MATOMO} for site id ${site_id}"
+                 curl -sS "${MATOMO_URL}?module=API&method=CoreAdminHome.invalidateArchivedReports&idSites=${site_id}&dates=${LOG_DATE_MATOMO}&token_auth=${MATOMO_TOKEN}"
 
 
 	done	
