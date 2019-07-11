@@ -1,7 +1,7 @@
 #!/bin/sh
 
-if [ -z "${MATOMO_URL}" ] || [ -z "${MATOMO_USERNAME}" ] || [ -z "${MATOMO_PASSWORD}" ] ; then
-  echo "Needs MATOMO_URL, MATOMO_USERNAME and MATOMO_PASSWORD to work"
+if [ -z "${MATOMO_URL}" ] || [ -z "${MATOMO_TOKEN}" ] ; then
+  echo "Needs MATOMO_URL and MATOMO_TOKEN to work"
   exit 1
 fi
 
@@ -22,7 +22,7 @@ if [ "$@" == "run" ]; then
 	cat /analytics/processed/$site_id/log.* | grep /analytics/logs/$site_id > /tmp/list_processed
 	
 	for file in $(grep -Fvx -f /tmp/list_processed /tmp/list_files.txt); do
-		result=$(python /import_logs.py   --login=${MATOMO_USERNAME} --password=${MATOMO_PASSWORD} --idsite=$site_id  --url=$MATOMO_URL --recorders=$MATOMO_RECORDERS $MATOMO_IMPORT_OPTIONS $file 2>&1 )
+		result=$(python /import_logs.py   --token-auth=${MATOMO_TOKEN} --idsite=$site_id  --url=$MATOMO_URL --recorders=$MATOMO_RECORDERS $MATOMO_IMPORT_OPTIONS $file 2>&1 )
 	        if [ $? -eq 0 ]; then
 			number_processed=$(echo "$result"  | grep successfully | awk '{print $1}' )
                 	echo "[Date]:$(date -u  '+%Y-%m-%d-%H-%M-%S') [Status]:OK [Records Imported]:$number_processed [File name]:" >> /analytics/processed/$site_id/log.$(date -u  '+%Y-%m')
@@ -34,7 +34,19 @@ if [ "$@" == "run" ]; then
 			echo "$result"
 	        fi
 
+                LOG_DATE=$(head -n 1 $file  | sed 's/^.* \[\([0-9A-Za-z\/:]*\) .*\] .*$/\1/g')
+                LOG_DATE_MATOMO=$(python -c "
+from datetime import datetime
+print datetime.strptime('${LOG_DATE}', '%d/%b/%Y:%H:%M:%S').strftime('%Y-%m-%d')")  
+		 
+		#invalidate reports
+                 curl "${MATOMO_URL}?module=API&method=CoreAdminHome.invalidateArchivedReports&idSites=${site_id}&dates=${LOG_DATE_MATOMO}&token_auth=${MATOMO_TOKEN}"
+
+
 	done	
+
+        
+
        
         if [ -f /analytics/processed/$site_id/log.$(date -u -d "@$(( $(date +%s) - 86400 * 63 ))"  '+%Y-%m') ]; then
 		rm -f  /analytics/processed/$site_id/log.$(date -u -d "@$(( $(date +%s) - 86400 * 63 ))"  '+%Y-%m') 

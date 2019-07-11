@@ -6,8 +6,7 @@ https://github.com/matomo-org/matomo-log-analytics/
 ## Environment variables
 
 * *MATOMO_URL* - mandatory, the url that will be accessed to be able to send the tracking requests
-* *MATOMO_USERNAME* - mandatory, the user with write access that will be accessed to be able to send the tracking requests
-* *MATOMO_PASSWORD* - mandatory, the password with write access that will be accessed to be able to send the tracking requests
+* *MATOMO_TOKEN* - mandatory, superuser access token
 * *MATOMO_RECORDERS* - default 4, the number of threads that will process the requests
 * *MATOMO_IMPORT_OPTIONS* - default "--enable-http-errors --enable-http-redirects --enable-static --enable-bots", Matomo import options - referenced in https://matomo.org/docs/log-analytics-tool-how-to/
 
