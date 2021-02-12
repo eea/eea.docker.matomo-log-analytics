@@ -1,5 +1,5 @@
 
-FROM python:3-alpine
+FROM python:3.8-alpine
 LABEL maintainer="EEA: IDM2 A-Team <eea-edw-a-team-alerts@googlegroups.com>"
 
 
