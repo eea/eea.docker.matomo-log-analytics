@@ -37,7 +37,7 @@ if [ "$@" == "run" ]; then
                 LOG_DATE=$(head -n 1 $file  | sed 's/^.* \[\([0-9A-Za-z\/:]*\) .*\] .*$/\1/g')
                 LOG_DATE_MATOMO=$(python -c "
 from datetime import datetime
-print datetime.strptime('${LOG_DATE}', '%d/%b/%Y:%H:%M:%S').strftime('%Y-%m-%d')")  
+print(datetime.strptime('${LOG_DATE}', '%d/%b/%Y:%H:%M:%S').strftime('%Y-%m-%d'))")  
 		 
 		#invalidate reports
 		 echo "Invalidating date ${LOG_DATE_MATOMO} for site id ${site_id}"
