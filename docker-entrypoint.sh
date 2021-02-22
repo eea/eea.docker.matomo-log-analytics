@@ -23,25 +23,26 @@ if [ "$@" == "run" ]; then
 	
 	for file in $(grep -Fvx -f /tmp/list_processed /tmp/list_files.txt); do
 		result=$(python /import_logs.py   --token-auth=${MATOMO_TOKEN} --idsite=$site_id  --url=$MATOMO_URL --recorders=$MATOMO_RECORDERS $MATOMO_IMPORT_OPTIONS $file 2>&1 )
-	        if [ $? -eq 0 ]; then
+	        if [ $? -eq 0 ] && [ $(echo $result | grep -c "Logs import summary") -gt 0 ] && [ $(echo $result | grep -c "0 requests imported successfully") -eq 0 ]; then
 			number_processed=$(echo "$result"  | grep successfully | awk '{print $1}' )
                 	echo "[Date]:$(date -u  '+%Y-%m-%d-%H-%M-%S') [Status]:OK [Records Imported]:$number_processed [File name]:" >> /analytics/processed/$site_id/log.$(date -u  '+%Y-%m')
                         echo "$file" >> /analytics/processed/$site_id/log.$(date -u  '+%Y-%m')
 			echo "$file processed succesfully, with the following result:"
 			echo "$result"
+	               LOG_DATE=$(head -n 1 $file  | sed 's/^.* \[\([0-9A-Za-z\/:]*\) .*\] .*$/\1/g')
+                       LOG_DATE_MATOMO=$(python -c "
+from datetime import datetime
+print(datetime.strptime('${LOG_DATE}', '%d/%b/%Y:%H:%M:%S').strftime('%Y-%m-%d'))")  
+		 
+	  	       #invalidate reports
+		       echo "Invalidating date ${LOG_DATE_MATOMO} for site id ${site_id}"
+                       curl -sS "${MATOMO_URL}?module=API&method=CoreAdminHome.invalidateArchivedReports&idSites=${site_id}&dates=${LOG_DATE_MATOMO}&token_auth=${MATOMO_TOKEN}"
+
 		else
 			echo "IMPORT_LOG_ERROR - $file"
 			echo "$result"
 	        fi
 
-                LOG_DATE=$(head -n 1 $file  | sed 's/^.* \[\([0-9A-Za-z\/:]*\) .*\] .*$/\1/g')
-                LOG_DATE_MATOMO=$(python -c "
-from datetime import datetime
-print(datetime.strptime('${LOG_DATE}', '%d/%b/%Y:%H:%M:%S').strftime('%Y-%m-%d'))")  
-		 
-		#invalidate reports
-		 echo "Invalidating date ${LOG_DATE_MATOMO} for site id ${site_id}"
-                 curl -sS "${MATOMO_URL}?module=API&method=CoreAdminHome.invalidateArchivedReports&idSites=${site_id}&dates=${LOG_DATE_MATOMO}&token_auth=${MATOMO_TOKEN}"
 
 
 	done	
