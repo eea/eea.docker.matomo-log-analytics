@@ -7,6 +7,7 @@ fi
 
 MATOMO_RECORDERS=${MATOMO_RECORDERS:-4}
 MATOMO_IMPORT_OPTIONS=${MATOMO_IMPORT_OPTIONS:-"--enable-http-errors --enable-http-redirects --enable-static --enable-bots"}
+MATOMO_MAX_REQUESTS_PERS=${MATOMO_MAX_REQUESTS_PERS:-1000}
 
 mkdir -p /analytics/logs/
 
@@ -23,9 +24,13 @@ if [ "$@" == "run" ]; then
 	
 	for file in $(grep -Fvx -f /tmp/list_processed /tmp/list_files.txt); do
 		result=$(python /import_logs.py   --token-auth=${MATOMO_TOKEN} --idsite=$site_id  --url=$MATOMO_URL --recorders=$MATOMO_RECORDERS $MATOMO_IMPORT_OPTIONS $file 2>&1 )
-	        if [ $? -eq 0 ] && [ $(echo $result | grep -c "Logs import summary") -gt 0 ] && [ $(echo $result | grep -c "0 requests imported successfully") -eq 0 ]; then
+	        requests_pers=$(echo "$result"  |grep "Requests imported per second" | awk '{print $5}')
+		requests_pers_check=$(echo "$result"  |grep "Requests imported per second" | awk -v max="$MATOMO_MAX_REQUESTS_PERS" '{ if (max<$5) print "FAIL"}')
+
+		if [ $? -eq 0 ] && [ $(echo $result | grep -c "Logs import summary") -gt 0 ] && [ $(echo $result | grep -c "0 requests imported successfully") -eq 0 ] && [ -z "$requests_pers_check" ]; then
 			number_processed=$(echo "$result"  | grep successfully | awk '{print $1}' )
-                	echo "[Date]:$(date -u  '+%Y-%m-%d-%H-%M-%S') [Status]:OK [Records Imported]:$number_processed [File name]:" >> /analytics/processed/$site_id/log.$(date -u  '+%Y-%m')
+			total_time=$(echo "$result"  | grep "Total time" | awk '{print $3}' )
+                	echo "[Date]:$(date -u  '+%Y-%m-%d-%H-%M-%S') [Status]:OK [Records Imported]:$number_processed [Duration (seconds)]:$total_time [Requests per s]:$requests_pers [File name]:" >> /analytics/processed/$site_id/log.$(date -u  '+%Y-%m')
                         echo "$file" >> /analytics/processed/$site_id/log.$(date -u  '+%Y-%m')
 			echo "$file processed succesfully, with the following result:"
 			echo "$result"
@@ -39,8 +44,13 @@ print(datetime.strptime('${LOG_DATE}', '%d/%b/%Y:%H:%M:%S').strftime('%Y-%m-%d')
                        curl -sS "${MATOMO_URL}?module=API&method=CoreAdminHome.invalidateArchivedReports&idSites=${site_id}&dates=${LOG_DATE_MATOMO}&token_auth=${MATOMO_TOKEN}"
 
 		else
-			echo "IMPORT_LOG_ERROR - $file"
-			echo "$result"
+		       if [ -n "$requests_pers_check" ]; then
+		            echo "Too many requests per second - $requests_pers > $MATOMO_MAX_REQUESTS_PERS, will not mark the file as imported successfully"
+			    echo "IMPORT_LOG_ERROR_CHECK - $file"
+		       else    
+			    echo "IMPORT_LOG_ERROR - $file"
+		       fi
+		       echo "$result"
 	        fi
 
 
