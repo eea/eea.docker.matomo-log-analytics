@@ -9,6 +9,7 @@ https://github.com/matomo-org/matomo-log-analytics/
 * *MATOMO_TOKEN* - mandatory, superuser access token
 * *MATOMO_RECORDERS* - default 4, the number of threads that will process the requests
 * *MATOMO_IMPORT_OPTIONS* - default "--enable-http-errors --enable-http-redirects --enable-static --enable-bots", Matomo import options - referenced in https://matomo.org/docs/log-analytics-tool-how-to/
+* *MATOMO_MAX_REQUESTS_PERS* - default 1000, will not mark file as processed if number of requests per second is bigger than it
 
 ## Usage
 
