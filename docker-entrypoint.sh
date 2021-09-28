@@ -65,7 +65,7 @@ print(datetime.strptime('${LOG_DATE}', '%d/%b/%Y:%H:%M:%S').strftime('%Y-%m-%d')
        cat /analytics/processed/$site_id/invalidate
        echo "----------------------------------------------"
        
-       if [ $current_hour -gt 1 ] && [ $current_hour -lt 8 ]; then
+       if [ $current_hour -ge 1 ] && [ $current_hour -lt 7 ]; then
            for to_do in $(cat /analytics/processed/$site_id/invalidate); do
                if [[ ! "$to_do" == "$current_day" ]]; then
                     #invalidate reports
