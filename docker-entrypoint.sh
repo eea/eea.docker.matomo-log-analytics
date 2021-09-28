@@ -42,7 +42,7 @@ if [ "$@" == "run" ]; then
 from datetime import datetime
 print(datetime.strptime('${LOG_DATE}', '%d/%b/%Y:%H:%M:%S').strftime('%Y-%m-%d'))")  
          
-            echo "${LOG_DATE}" >> /analytics/processed/$site_id/invalidate
+            echo "${LOG_DATE_MATOMO}" >> /analytics/processed/$site_id/invalidate
         else
                if [ -n "$requests_pers_check" ]; then
                    echo "Too many requests per second - $requests_pers > $MATOMO_MAX_REQUESTS_PERS, will not mark the file as imported successfully"
