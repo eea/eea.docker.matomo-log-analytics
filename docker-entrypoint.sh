@@ -24,6 +24,7 @@ if [ "$@" == "run" ]; then
       cat /analytics/processed/$site_id/log.* | grep /analytics/logs/$site_id > /tmp/list_processed
     
       for file in $(grep -Fvx -f /tmp/list_processed /tmp/list_files.txt); do
+        echo "Starting to run on $file"
         result=$(python /import_logs.py   --token-auth=${MATOMO_TOKEN} --idsite=$site_id  --url=$MATOMO_URL --recorders=$MATOMO_RECORDERS $MATOMO_IMPORT_OPTIONS $file 2>&1 )
         import_exit_code=$?
         requests_pers=$(echo "$result"  |grep "Requests imported per second" | awk '{print $5}')
