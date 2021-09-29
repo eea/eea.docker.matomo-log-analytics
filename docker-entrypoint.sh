@@ -20,6 +20,7 @@ if [ "$@" == "run" ]; then
       mkdir -p /analytics/processed/$site_id/    
       touch /analytics/processed/$site_id/log.$(date -u  '+%Y-%m')
       touch /analytics/processed/$site_id/invalidate
+      touch /analytics/processed/$site_id/error
         
       cat /analytics/processed/$site_id/log.* | grep /analytics/logs/$site_id > /tmp/list_processed
     
@@ -49,6 +50,19 @@ print(datetime.strptime('${LOG_DATE}', '%d/%b/%Y:%H:%M:%S').strftime('%Y-%m-%d')
                    echo "IMPORT_LOG_ERROR_CHECK - $file"
                else    
                    echo "IMPORT_LOG_ERROR - $file"
+                   
+                   #try only 2 times to import the file
+                   if [ $(grep $file /analytics/processed/$site_id/error | wc -l) -eq 0 ]; then
+                           echo "========================================================================="
+                           echo "========================================================================="
+                           echo $file >> /analytics/processed/$site_id/error
+                           echo "========================================================================="
+                           echo $result >> /analytics/processed/$site_id/error
+                           echo "========================================================================="        
+                   else
+                         echo "$file processed unsuccessfully 2 times, will not keep importing it"
+                         echo "$file" >> /analytics/processed/$site_id/log.$(date -u  '+%Y-%m')
+                   fi
                fi
                echo "$result"
             fi
