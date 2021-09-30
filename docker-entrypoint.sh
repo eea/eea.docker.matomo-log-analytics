@@ -30,9 +30,9 @@ if [ "$@" == "run" ]; then
         import_exit_code=$?
         requests_pers=$(echo "$result"  |grep "Requests imported per second" | awk '{print $5}')
         requests_pers_check=$(echo "$result"  |grep "Requests imported per second" | awk -v max="$MATOMO_MAX_REQUESTS_PERS" '{ if (max<$5) print "FAIL"}')
-
-        if [ $import_exit_code -eq 0 ] && [ $(echo $result | grep "Logs import summary" | wc -l ) -gt 0 ] && [ $(echo $result | grep "^ *0 requests imported successfully" | wc -l) -eq 0 ] && [ -z "$requests_pers_check" ]; then
-            number_processed=$(echo "$result"  | grep successfully | awk '{print $1}' )
+        number_processed=$(echo "$result"  | grep "requests imported successfully" | awk '{print $1}' )
+            
+        if [ $import_exit_code -eq 0 ] && [ $(echo $result | grep "Logs import summary" | wc -l ) -gt 0 ] && [ "$number_processed" -gt 0 ] && [ -z "$requests_pers_check" ]; then
             total_time=$(echo "$result"  | grep "Total time" | awk '{print $3}' )
             echo "[Date]:$(date -u  '+%Y-%m-%d-%H-%M-%S') [Status]:OK [Records Imported]:$number_processed [Duration (seconds)]:$total_time [Requests per s]:$requests_pers [File name]:" >> /analytics/processed/$site_id/log.$(date -u  '+%Y-%m')
             echo "$file" >> /analytics/processed/$site_id/log.$(date -u  '+%Y-%m')
